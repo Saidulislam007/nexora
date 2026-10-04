@@ -1,9 +1,11 @@
+import WorldwideSection from "@/components/sections/WorldwideSection";
+import StudioStorySection from "@/components/sections/StudioStorySection";
+import StudioUpdatesSection from "@/components/sections/StudioUpdatesSection";
 import GamesSection from "@/components/sections/GamesSection";
 import DiscoverSection from "@/components/sections/DiscoverSection";
 import AboutSection from "@/components/sections/AboutSection";
 import ContactSection from "@/components/sections/ContactSection";
 import HeroSection from "@/components/sections/HeroSection";
-import MaterialLabSection from "@/components/sections/MaterialLabSection";
 import WorkSection from "@/components/sections/WorkSection";
 import Header from "@/components/layout/Header";
 
@@ -16,8 +18,9 @@ export default function Home() {
       <AboutSection />
       <DiscoverSection />
       <GamesSection />
-      
-      <MaterialLabSection />
+      <WorldwideSection />
+      <StudioStorySection />
+      <StudioUpdatesSection />
       <ContactSection />
     </main>
   );

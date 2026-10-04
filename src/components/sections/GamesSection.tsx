@@ -8,6 +8,58 @@ export default function GamesSection() {
   const panel = useRef<HTMLDivElement>(null);
   const wordmark = useRef<HTMLParagraphElement>(null);
   const wipe = useRef<HTMLDivElement>(null);
+  const action = useRef<HTMLAnchorElement>(null);
+  const circle = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const link = action.current;
+    const disc = circle.current;
+    if (!link || !disc) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let frame = 0;
+    let previous = 0;
+    let x = 0;
+    let y = 0;
+    let targetX = 0;
+    let targetY = 0;
+    const render = (time: number) => {
+      frame = 0;
+      const dt = Math.min(time - (previous || time - 16), 40);
+      previous = time;
+      const ease = 1 - Math.exp(-dt / 110);
+      x += (targetX - x) * ease;
+      y += (targetY - y) * ease;
+      disc.style.translate = `${x}px ${y}px`;
+      if (Math.hypot(targetX - x, targetY - y) > 0.1) frame = requestAnimationFrame(render);
+      else previous = 0;
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(render); };
+    const move = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse" || reduced.matches) return;
+      const bounds = link.getBoundingClientRect();
+      // Measure the stationary link so the moving circle cannot feed back into its target.
+      const centerX = bounds.right - disc.offsetWidth / 2;
+      const centerY = bounds.top + bounds.height / 2;
+      targetX = Math.max(-32, Math.min(32, (event.clientX - centerX) * 0.25));
+      targetY = Math.max(-28, Math.min(28, (event.clientY - centerY) * 0.25));
+      schedule();
+    };
+    const reset = () => { targetX = 0; targetY = 0; schedule(); };
+    link.addEventListener("pointermove", move);
+    link.addEventListener("pointerleave", reset);
+    link.addEventListener("pointercancel", reset);
+    window.addEventListener("blur", reset);
+    reduced.addEventListener("change", reset);
+    return () => {
+      cancelAnimationFrame(frame);
+      link.removeEventListener("pointermove", move);
+      link.removeEventListener("pointerleave", reset);
+      link.removeEventListener("pointercancel", reset);
+      window.removeEventListener("blur", reset);
+      reduced.removeEventListener("change", reset);
+      disc.style.translate = "";
+    };
+  }, []);
 
   useEffect(() => {
     const area = section.current;
@@ -61,9 +113,9 @@ export default function GamesSection() {
           <p data-games-reveal className="max-w-[310px] text-xs leading-[1.5] uppercase md:max-w-[16vw] md:text-[clamp(12px,.84vw,17px)]">
             Gaming is the future of experience. We make games with heart. We make games that deliver.
           </p>
-          <a data-games-reveal href="#contact" aria-label="Contact Nexora about an interactive game" className="group flex items-center justify-end gap-6 self-end rounded-full md:self-center outline-offset-8 focus-visible:outline-2 focus-visible:outline-white md:gap-[5.5vw]">
+          <a ref={action} data-games-reveal href="#contact" aria-label="Contact Nexora about an interactive game" className="group flex items-center justify-end gap-6 self-end rounded-full md:self-center outline-offset-8 focus-visible:outline-2 focus-visible:outline-white md:gap-[5.5vw]">
             <span className="text-sm leading-[1.5] md:text-[clamp(14px,1.08vw,22px)]">Discover<br />makemeplay.</span>
-            <span className="grid size-20 shrink-0 place-items-center rounded-full bg-[#fffdf9] text-[#181818] transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none md:size-[8.5vw] md:max-h-[164px] md:max-w-[164px]">
+            <span ref={circle} className="will-change-transform grid size-20 shrink-0 place-items-center rounded-full bg-[#fffdf9] text-[#181818] transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none md:size-[8.5vw] md:max-h-[164px] md:max-w-[164px]">
               <ArrowUpRight aria-hidden="true" className="size-6 rotate-[30deg] transition-transform duration-500 group-hover:translate-x-1 group-hover:-translate-y-1 motion-reduce:transition-none md:size-8" strokeWidth={1.3} />
             </span>
           </a>
