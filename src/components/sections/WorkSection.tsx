@@ -1,25 +1,102 @@
 "use client";
 
-import { ArrowUpRight, Pause, Play } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
-
-const projects = [
-  { n:"01", title:"The Material Gate", type:"Interactive identity", tone:"orange", crop:"object-[46%_center]" },
-  { n:"02", title:"Bodies of Light", type:"Digital installation", tone:"blue", crop:"object-[70%_center]" },
-  { n:"03", title:"Future Archives", type:"Cultural experience", tone:"black", crop:"object-[20%_center]" },
-];
+import { useEffect, useRef } from "react";
 
 export default function WorkSection() {
-  const [active, setActive] = useState(0);
-  const [playing, setPlaying] = useState(true);
-  const project = projects[active];
+  const picture = useRef<HTMLAnchorElement>(null);
+  const cursor = useRef<HTMLSpanElement>(null);
 
-  return <section id="work" className="bg-[#101010] px-4 py-5 text-white md:px-5"><div className="relative min-h-[92vh] overflow-hidden rounded-[1.3rem]">
-    <Image src="/nexora-world.png" alt="Surreal material spheres floating through an architectural portal" fill priority sizes="100vw" className={`absolute inset-0 scale-[1.03] object-cover transition-all duration-1000 ${project.crop}`}/><div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/0 to-black/20"/>
-    <div className="absolute inset-x-0 top-0 flex items-center justify-between p-6 text-xs uppercase tracking-[.15em] md:p-9"><span>Selected worlds / 03</span><button onClick={() => setPlaying(!playing)} className="grid size-11 place-items-center rounded-full bg-white text-black" aria-label={playing ? "Pause motion" : "Play motion"}>{playing ? <Pause size={16}/> : <Play size={16}/>}</button></div>
-    <div className="absolute inset-x-0 bottom-0 p-6 md:p-9"><div className="mb-7 flex items-end justify-between"><div><p className="mb-2 text-sm text-white/65">{project.type}</p><h2 className="max-w-5xl text-[clamp(3rem,8vw,8rem)] font-medium leading-[.82] tracking-[-.07em]">{project.title}</h2></div><ArrowUpRight className="hidden md:block" size={55}/></div>
-      <div className="grid border-t border-white/35 md:grid-cols-3">{projects.map((item, index) => <button key={item.n} onMouseEnter={() => setActive(index)} onFocus={() => setActive(index)} onClick={() => setActive(index)} className={`flex items-center justify-between border-b border-white/25 py-5 text-left text-sm transition md:border-b-0 md:border-r md:px-5 ${active === index ? "text-white" : "text-white/45"}`}><span>{item.n} — {item.title}</span><span className={`size-2 rounded-full ${item.tone === "orange" ? "bg-orange-500" : item.tone === "blue" ? "bg-blue-500" : "bg-white"}`}/></button>)}</div>
-    </div>
-  </div></section>;
+  useEffect(() => {
+    const area = picture.current;
+    const circle = cursor.current;
+    if (!area || !circle) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let frame = 0;
+    let lastTime = 0;
+    let visible = false;
+    let initialized = false;
+    let x = 0;
+    let y = 0;
+    let targetX = 0;
+    let targetY = 0;
+
+    const render = (time: number) => {
+      frame = 0;
+      const delta = Math.min(time - (lastTime || time - 16), 40);
+      lastTime = time;
+      const ease = reducedMotion.matches ? 1 : 1 - Math.exp(-delta / 65);
+      x += (targetX - x) * ease;
+      y += (targetY - y) * ease;
+      circle.style.left = `${x}px`;
+      circle.style.top = `${y}px`;
+      if (visible && Math.hypot(targetX - x, targetY - y) > 0.1) {
+        frame = requestAnimationFrame(render);
+      } else lastTime = 0;
+    };
+    const move = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse" && event.pointerType !== "pen") return;
+      const box = area.getBoundingClientRect();
+      targetX = event.clientX - box.left;
+      targetY = event.clientY - box.top;
+      if (!initialized) {
+        x = targetX;
+        y = targetY;
+        initialized = true;
+        circle.style.left = `${x}px`;
+        circle.style.top = `${y}px`;
+      }
+      visible = true;
+      circle.style.opacity = "1";
+      circle.style.scale = "1";
+      if (!frame) frame = requestAnimationFrame(render);
+    };
+    const hide = () => {
+      visible = false;
+      initialized = false;
+      circle.style.opacity = "0";
+      circle.style.scale = "0.65";
+      cancelAnimationFrame(frame);
+      frame = 0;
+      lastTime = 0;
+    };
+    area.addEventListener("pointerenter", move);
+    area.addEventListener("pointermove", move);
+    area.addEventListener("pointerleave", hide);
+    window.addEventListener("blur", hide);
+    window.addEventListener("scroll", hide, { passive: true });
+    return () => {
+      hide();
+      area.removeEventListener("pointerenter", move);
+      area.removeEventListener("pointermove", move);
+      area.removeEventListener("pointerleave", hide);
+      window.removeEventListener("blur", hide);
+      window.removeEventListener("scroll", hide);
+    };
+  }, []);
+
+  return (
+    <section id="work" className="relative z-30 bg-white px-5 pb-12 text-[#101010] md:px-0 md:pb-20">
+      <article className="relative -top-8 mx-auto -mb-8 w-full md:-top-12 md:-mb-12 md:w-[70%]">
+        <a ref={picture} href="#contact" aria-label="Discuss an interactive project with Nexora"
+          className="relative block aspect-[16/9] overflow-hidden bg-[#1a1a1a] outline-offset-8 focus-visible:outline-2 focus-visible:outline-[#2444df] [@media(hover:hover)_and_(pointer:fine)]:cursor-none">
+          <Image src="/nexora-world.png" alt="Surreal spheres and an architectural portal from Nexora’s Material Gate project"
+            fill sizes="(min-width: 768px) 70vw, calc(100vw - 40px)" className="object-cover" />
+          <span ref={cursor} aria-hidden="true"
+            className="pointer-events-none absolute z-10 grid size-16 -translate-x-1/2 -translate-y-1/2 scale-[.65] place-items-center rounded-full bg-white text-[#101010] opacity-0 shadow-sm transition-[opacity,scale] duration-200 ease-out motion-reduce:transition-none md:size-24">
+            <ArrowUpRight size={22} strokeWidth={1} />
+          </span>
+        </a>
+        <div className="flex flex-col gap-4 px-1 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8 md:py-7">
+          <h2 className="text-xl font-normal leading-tight tracking-[-.04em] md:text-[clamp(1.2rem,2.4vw,3rem)]">
+            The Material Gate — An Interactive Digital World
+          </h2>
+          <p className="shrink-0 text-[9px] font-semibold uppercase leading-[1.05] tracking-tight md:text-[11px]">
+            Creative technology<br />by Nexora Studio
+          </p>
+        </div>
+      </article>
+    </section>
+  );
 }
