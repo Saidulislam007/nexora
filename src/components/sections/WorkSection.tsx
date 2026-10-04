@@ -2,6 +2,7 @@
 
 import { ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import materialGateImage from "@/assets/nexora-world.webp";
 import { useEffect, useRef, useState } from "react";
 
 export default function WorkSection() {
@@ -96,7 +97,7 @@ export default function WorkSection() {
       <article className="relative -top-8 mx-auto -mb-8 w-full md:-top-12 md:-mb-12 md:w-[70%]">
         <a ref={picture} href="#contact" aria-label="Discuss an interactive project with Nexora"
           className="relative block aspect-[16/9] overflow-hidden bg-[#1a1a1a] outline-offset-8 focus-visible:outline-2 focus-visible:outline-[#2444df] [@media(hover:hover)_and_(pointer:fine)]:cursor-none">
-          <Image src="/nexora-world.png" alt="Surreal spheres and an architectural portal from Nexora’s Material Gate project"
+          <Image src={materialGateImage} unoptimized alt="Surreal spheres and an architectural portal from Nexora’s Material Gate project"
             fill sizes="(min-width: 768px) 70vw, calc(100vw - 40px)" className="object-cover" />
           <span ref={cursor} aria-hidden="true"
             className="pointer-events-none absolute z-10 grid size-16 -translate-x-1/2 -translate-y-1/2 scale-[.65] place-items-center rounded-full bg-white text-[#101010] opacity-0 shadow-sm transition-[opacity,scale] duration-200 ease-out motion-reduce:transition-none md:size-24">
