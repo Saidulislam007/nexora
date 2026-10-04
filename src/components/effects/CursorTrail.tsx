@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { bangladeshPhotos } from "@/data/bangladesh-photos";
 
-const sources = ["/trail-blue.png", "/trail-glass.png", "/nexora-world.png"];
+const fallbackSources = ["/trail-blue.png", "/trail-glass.png", "/nexora-world.png"];
 const POOL_SIZE = 18;
 const LIFETIME = 900;
 
@@ -26,6 +27,7 @@ export default function CursorTrail() {
 
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const cards: Card[] = [];
+    let sources = fallbackSources;
     let disposed = false;
     let ready = false;
     let inside = false;
@@ -38,11 +40,25 @@ export default function CursorTrail() {
     let anchor = { ...target };
 
     // Decode once before displaying cards; movement never creates new images.
-    Promise.all(sources.map(async (src) => {
-      const image = new window.Image();
-      image.src = src;
-      await image.decode();
-    })).then(() => { if (!disposed) ready = true; }).catch(() => {});
+    const candidates = bangladeshPhotos.length ? bangladeshPhotos : fallbackSources;
+    // Limit parallel decoding and show the trail as soon as photos are ready.
+    let nextSource = 0;
+    const loaded: string[] = [];
+    const decodeWorker = async () => {
+      while (!disposed && nextSource < candidates.length) {
+        const src = candidates[nextSource++];
+        try {
+          const image = new window.Image();
+          image.src = src;
+          await image.decode();
+          if (disposed) return;
+          loaded.push(src);
+          sources = [...loaded];
+          ready = true;
+        } catch { /* Skip unavailable images instead of displaying empty cards. */ }
+      }
+    };
+    void Promise.all(Array.from({ length: 4 }, decodeWorker));
 
     for (let i = 0; i < POOL_SIZE; i++) {
       const element = document.createElement("div");
