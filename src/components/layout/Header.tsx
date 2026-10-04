@@ -13,6 +13,6 @@ export default function Header() {
       <div className="hidden text-center text-[12px] uppercase tracking-[.16em] text-white/45 md:block">Creative technology studio<br/>Dhaka · Everywhere</div>
       <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-3 text-sm uppercase tracking-[.12em]" aria-label="Toggle navigation">Menu <span className="grid size-10 place-items-center rounded-full border border-white/25">{menuOpen ? <X size={17}/> : <Menu size={17}/>}</span></button>
     </header>
-    {menuOpen && <div className="fixed inset-0 z-40 grid bg-[#ff5b21] px-5 pt-24 md:px-10"><nav className="flex flex-col justify-center text-[clamp(4rem,11vw,10rem)] font-medium leading-[.82] tracking-[-.07em]">{links.map(([label, href]) => <a key={href} onClick={() => setMenuOpen(false)} href={href}>{label}</a>)}</nav></div>}
+    {menuOpen && <div className="fixed inset-0 z-40 grid bg-[#0a0a0a] text-[#f4f1e8] px-5 pt-24 md:px-10"><nav className="flex flex-col justify-center text-[clamp(4rem,11vw,10rem)] font-medium leading-[.82] tracking-[-.07em]">{links.map(([label, href]) => <a className="w-fit transition-colors duration-300 hover:text-[#a080fa] focus-visible:text-[#a080fa] motion-reduce:transition-none" key={href} onClick={() => setMenuOpen(false)} href={href}>{label}</a>)}</nav></div>}
   </>;
 }
