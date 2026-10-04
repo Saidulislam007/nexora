@@ -5,8 +5,12 @@ export const metadata: Metadata = {
   title: "Nexora — Ideas in Motion",
   description: "An independent creative studio designing immersive digital experiences, interactive stories and real-time motion.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
 };
 
