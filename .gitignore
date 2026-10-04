@@ -2,6 +2,6 @@
 /.next
 /out
 *.log
-.env*
 !.env.example
 .DS_Store
+config.bat
